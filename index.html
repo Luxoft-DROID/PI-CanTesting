@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="/node_modules/angular-material/angular-material.css">
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.js"
+      integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+      crossorigin="anonymous">
+    </script>
+	  <script src="/node_modules/angular/angular.js"></script>
+    <script src="/node_modules/angular-aria/angular-aria.js"></script>
+    <script src="/node_modules/angular-animate/angular-animate.js"></script>
+    <script src="/node_modules/angular-material/angular-material.js"></script>
+	  <script src="/node_modules/angular-messages/angular-messages.js"></script>
+    <script>
+
+    function dump(){
+        $.ajax({
+            url:'/dump',
+            type:'post'
+        });
+    }
+        var app = angular.module('YourApp', ['ngMaterial', 'ngMessages']);
+    		app.controller('YourController', function($scope, $http) {
+          $scope.response = '';
+          $scope.doGet = function() {
+            form.doGet().then(
+              function(response) {
+                $scope.response = 'success';
+                $scope.candump = response.candumps;
+              },
+              function(response) {
+                $scope.response = 'error';
+              });
+            }
+            $scope.doPost = function() {
+              $http({
+                method: 'POST',
+                url: "http://localhost/form",
+                data: {
+                  cansignal: $scope.cansignal
+                },
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+            }
+
+            $scope.moveUpLeft = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+            $scope.moveUp = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+            $scope.moveUpRight = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+
+            $scope.moveLeft = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+            $scope.moveRight = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+
+            $scope.moveDownLeft = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+            $scope.moveDown = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+            $scope.moveDownRight = function() {
+              $scope.cansignal = "move"
+              $scope.SendData("form");
+            }
+
+            $scope.SendData = function (address) {
+               // use $.param jQuery function to serialize data from JSON
+
+                 if (address == "dump")
+                     var data = $.param({
+                         dump : true
+                     });
+                 else (address == "form")
+                     var data = $.param({
+                         cansignal : $scope.cansignal
+                     });
+
+                var config = {
+                    headers : {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+                    }
+                }
+
+                $http.post('/' + address, data, config).then(function(success) {
+                    $scope.candump = success.data.candumps;
+                    console.log($scope.candump);
+                })
+            };
+
+            $scope.StopCommand = function () {
+               // use $.param jQuery function to serialize data from JSON
+                var data = $.param({
+                    reset : true
+                });
+
+                var config = {
+                    headers : {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+                    }
+                }
+
+                $http.post('/stop', data, config).then(function(success) {
+                    $scope.status = success.data.status;
+                    console.log($scope.status);
+                })
+            };
+
+    		 })
+         .service('form', function($http) {
+            function doGet() {
+              // return promise from test
+              return $http.get('http://localhost/form');
+            }
+
+            return {
+              doGet: doGet
+            }
+          })
+
+    </script>
+</head>
+    <body ng-app="YourApp" layout="column" ng-cloak>
+
+    <div ng-controller="YourController">
+    		<md-content layout-padding>
+
+    		<section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
+          <md-button class="md-fab md-primary" ng-mousedown="moveUpLeft()" ng-mouseup="StopCommand()" style="transform: rotate(-45deg)" aria-label="UpLeft">
+    				<md-icon md-svg-src="/svg/up.svg"></md-icon>
+    			</md-button>
+          <md-button class="md-fab md-primary" ng-mousedown="moveUp()" ng-mouseup="StopCommand()" aria-label="Up">
+    				<md-icon md-svg-src="/svg/up.svg"></md-icon>
+    			</md-button>
+    			<md-button class="md-fab md-primary" ng-mousedown="moveUpRight()" ng-mouseup="StopCommand()" style="transform: rotate(45deg)" aria-label="UpRight">
+    				<md-icon md-svg-src="/svg/up.svg"></md-icon>
+    			</md-button>
+    		</section>
+    		<section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
+    			<md-button class="md-fab md-primary" ng-mousedown="moveLeft()" ng-mouseup="StopCommand()" aria-label="Left">
+    			  <md-icon md-svg-src="/svg/left.svg"></md-icon>
+    			</md-button>
+
+          <md-button class="md-fab md-disabled" ng-disabled="true" aria-label="blank">
+    				<md-icon md-svg-src="/svg/blank.svg"></md-icon>
+    			</md-button>
+
+    			<md-button class="md-fab md-primary" ng-mousedown="moveRight()" ng-mouseup="StopCommand()" aria-label="Right">
+    				<md-icon md-svg-src="/svg/right.svg"></md-icon>
+    			</md-button>
+    		</section>
+    		<section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
+    			<md-button class="md-fab md-primary" ng-mousedown="moveDownLeft()" ng-mouseup="StopCommand()" style="transform: rotate(45deg)" aria-label="DownLeft">
+    				<md-icon md-svg-src="/svg/down.svg"></md-icon>
+    			</md-button>
+          <md-button class="md-fab md-primary" ng-mousedown="moveDown()" ng-mouseup="StopCommand()" aria-label="Down">
+    				<md-icon md-svg-src="/svg/down.svg"></md-icon>
+    			</md-button>
+          <md-button class="md-fab md-primary" ng-mousedown="moveDownRight()" ng-mouseup="StopCommand()" style="transform: rotate(-45deg)" aria-label="DownRight">
+    				<md-icon md-svg-src="/svg/down.svg"></md-icon>
+    			</md-button>
+
+    		</section>
+
+          <form name="form">
+      		  <md-input-container class="md-block">
+      			<label>ID#Message</label>
+      			<input minlength="3" maxlength="12" ng-pattern="/^\d{1,3}#.+/" md-no-asterisk name="message" ng-model="project.message">
+      			<div ng-messages="projectForm.message.$error">
+              <div ng-message="minlength">The message must be at least 3 characters long.</div>
+        			<div ng-message="maxlength">The message must be less than 12 characters long.</div>
+        			<div ng-message="pattern">Incorrect frame format.</div>
+      			</div>
+      		  </md-input-container>
+
+      		  <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
+      			  <md-button class="md-raised md-primary" type="submit">Submit</md-button>
+              <md-button class="md-raised md-primary" ng-click="SendData('dump')" >Primary</md-button>
+            </section>
+
+      		</form>
+    	  </md-content>
+
+        <md-toolbar class="md-theme-light">
+          <h2 class="md-toolbar-tools">
+            <span>Recieved frames</span>
+          </h2>
+        </md-toolbar>
+        <md-content>
+          <md-list>
+            <md-list-item class="md-3-line" ng-repeat="item in messages">
+              <div class="md-list-item-text">
+                <div ng-repeat="dump in candump">
+                    <h3>{{dump.id}}</h3>
+                    <h4>{{dump.frame}}</h4>
+                </div>
+              </div>
+              <md-divider md-inset ng-if="!$last"></md-divider>
+            </md-list-item>
+          </md-list>
+        </md-content>
+    </div>
+
+
+</body>
+</html>

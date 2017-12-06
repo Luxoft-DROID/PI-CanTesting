@@ -1,52 +1,54 @@
-const path = require('path');
-const express = require('express');
-const exphbs = require('express-handlebars');
-const bodyParser = require('body-parser');
-const app = express();
-const can = require('socketcan');
+const path = require('path')
+const express = require('express')
+const can = require('rawcan');
+const exphbs = require('express-handlebars')
+const port = 3000
+const app = express()
+const motorsId = 456;
 
-var channel = can.createRawChannel("can0", true);
+var socket = can.createSocket('can0');
+var canlog = {};
+var candumps = []
+canlog.candump = candumps;
 
-// Log any message
-channel.addListener("onMessage", function(msg) { console.log(msg); } );
-// Reply any message
-channel.addListener("onMessage", channel.send, channel);
 
-channel.start();
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(express.static(path.join(__dirname, 'www')));
+  app.use('/', express.static(__dirname + '/'));
 
-app.engine('.hbs', exphbs({
-  defaultLayout: 'main',
-  extname: '.hbs',
-  layoutsDir: path.join(__dirname, 'views/layouts')
-}));
-app.set('view engine', '.hbs');
-app.set('views', path.join(__dirname, 'views'));
+  app.post('/form', function (req, res) {
+    console.log("recieved form");
+    var cansignal = req.body.cansignal;
+    var parsedCan = cansignal.split('#');
 
-const port = 3000;
-
-app.post('/form', function (req, res) {
-  var cansignal = req.body.cansignal;
-});
-
-app.post('/resetCan', function (req, res) {
-});
-
-app.post('/dump', function (req, res) {
-});
-
-app.get('/', (req, res) => {
-  res.render('home', {
-    name: 'Master'
+    socket.send(parseInt(parsedCan[0], 16), parsedCan[1].substring(0, 8));
+    console.log(parseInt(parsedCan[0], 16) + "#" + parsedCan[1].substring(0, 8));
   });
-});
 
-app.listen(port, (err) => {
-  if (err) {
-    return console.log('something bad happened', err);
-  }
+  socket.on('message', (id, buffer) => {
+    var tempstring = 'received frame [' + id.toString(16) + '] ' + buffer.toString('hex');
+    console.log(tempstring);
+    var dump = {
+      "id" : id.toString(16),
+      "frame" : buffer.toString('hex')
+    }
+    canlog.candump.unshift(dump);
+  });
 
-  console.log(`server is listening on ${port}`)
-});
+  app.post('/dump', function (req, res) {
+    console.log("dumped");
+    res.send("candumps : " + candumps);
+  });
+
+  app.post('/stop', function (req, res) {
+    console.log("stopped");
+    socket.send(parseInt(motorsId, 16), "00000000");
+    res.send("status : success");
+  });
+
+  app.listen(port, (err) => {
+    if (err) {
+      return console.log('something bad happened', err);
+    }
+
+    console.log(`server is listening on ${port}`)
+  });
