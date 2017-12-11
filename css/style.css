@@ -3,6 +3,13 @@
   color: #dd2c00;
   margin-top: 10px; }
 
+  .conditionalScroll{
+      width: 100%;
+      height: 225px; /*change to your liking*/
+      overflow: scroll;
+  }
+
+
 .chipsdemoBasicUsage .custom-chips md-chip {
   position: relative; }
   .chipsdemoBasicUsage .custom-chips md-chip .md-chip-remove-container {

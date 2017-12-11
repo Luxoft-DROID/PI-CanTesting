@@ -84,15 +84,9 @@
 
             $scope.SendData = function (address) {
                // use $.param jQuery function to serialize data from JSON
-
-                 if (address == "dump")
-                     var data = $.param({
-                         dump : true
-                     });
-                 else (address == "form")
-                     var data = $.param({
-                         cansignal : $scope.cansignal
-                     });
+               var data = $.param({
+                   cansignal : $scope.cansignal
+               });
 
                 var config = {
                     headers : {
@@ -100,8 +94,27 @@
                     }
                 }
 
-                $http.post('/' + address, data, config).then(function(success) {
+                $http.post('/form', data, config).then(function(success) {
                     $scope.candump = success.data.candumps;
+                    console.log($scope.candump);
+                })
+            };
+
+            $scope.ReceiveData = function (address) {
+               // use $.param jQuery function to serialize data from JSON
+
+               var data = $.param({
+                   dump : true
+               });
+
+                var config = {
+                    headers : {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+                    }
+                }
+
+                $http.post('/dump', data, config).then(function(success) {
+                    $scope.candump = success.data.candump;
                     console.log($scope.candump);
                 })
             };
@@ -135,6 +148,8 @@
               doGet: doGet
             }
           })
+
+          setInterval(function(){ $scope.ReceiveData(); }, 1000);
 
     </script>
 </head>
@@ -192,8 +207,8 @@
       		  </md-input-container>
 
       		  <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
-      			  <md-button class="md-raised md-primary" type="submit">Submit</md-button>
-              <md-button class="md-raised md-primary" ng-click="SendData('dump')" >Primary</md-button>
+      			  <md-button class="md-raised md-primary" type="submit">Send</md-button>
+              <md-button class="md-raised md-primary" ng-click="ReceiveData()" >Dump</md-button>
             </section>
 
       		</form>
@@ -206,12 +221,10 @@
         </md-toolbar>
         <md-content>
           <md-list>
-            <md-list-item class="md-3-line" ng-repeat="item in messages">
+            <md-list-item class="md-3-line" ng-repeat="dump in candump">
               <div class="md-list-item-text">
-                <div ng-repeat="dump in candump">
-                    <h3>{{dump.id}}</h3>
-                    <h4>{{dump.frame}}</h4>
-                </div>
+                <h3>{{dump.id}}</h3>
+                <h4>{{dump.frame}}</h4>
               </div>
               <md-divider md-inset ng-if="!$last"></md-divider>
             </md-list-item>

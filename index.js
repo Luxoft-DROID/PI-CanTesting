@@ -7,7 +7,7 @@ const app = express()
 const motorsId = 456;
 
 var socket = can.createSocket('can0');
-var canlog = {};
+canlog = {}
 var candumps = []
 canlog.candump = candumps;
 
@@ -35,8 +35,8 @@ canlog.candump = candumps;
   });
 
   app.post('/dump', function (req, res) {
-    console.log("dumped");
-    res.send("candumps : " + candumps);
+    console.log(canlog);
+    res.send(canlog);
   });
 
   app.post('/stop', function (req, res) {
