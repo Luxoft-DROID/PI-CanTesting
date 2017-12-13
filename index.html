@@ -3,6 +3,8 @@
 <head>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="/node_modules/angular-material/angular-material.css">
+    <link rel="stylesheet" href="/css/style.css">
+
     <script
       src="https://code.jquery.com/jquery-3.2.1.js"
       integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
@@ -22,134 +24,76 @@
         });
     }
         var app = angular.module('YourApp', ['ngMaterial', 'ngMessages']);
-    		app.controller('YourController', function($scope, $http) {
-          $scope.response = '';
-          $scope.doGet = function() {
-            form.doGet().then(
-              function(response) {
-                $scope.response = 'success';
-                $scope.candump = response.candumps;
-              },
-              function(response) {
-                $scope.response = 'error';
-              });
-            }
-            $scope.doPost = function() {
-              $http({
-                method: 'POST',
-                url: "http://localhost/form",
-                data: {
-                  cansignal: $scope.cansignal
-                },
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              });
-            }
+    		app.controller('YourController', function($scope, $http, $interval) {
+
+            $scope.candump = [];
 
             $scope.moveUpLeft = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("upleft");
             }
             $scope.moveUp = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("up");
             }
             $scope.moveUpRight = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("upright");
             }
-
             $scope.moveLeft = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("left");
             }
             $scope.moveRight = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("right");
             }
-
             $scope.moveDownLeft = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("downleft");
             }
             $scope.moveDown = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("down");
             }
             $scope.moveDownRight = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("downright");
             }
-
-            $scope.SendData = function (address) {
-               // use $.param jQuery function to serialize data from JSON
+            $scope.SendData = function (command) {
                var data = $.param({
-                   cansignal : $scope.cansignal
+                   cancommand : command
                });
-
-                var config = {
-                    headers : {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
-                    }
-                }
-
-                $http.post('/form', data, config).then(function(success) {
-                    $scope.candump = success.data.candumps;
-                    console.log($scope.candump);
+                $http.post('/form', data).then(function(success) {
+                    console.log(success.data.status);
                 })
             };
 
-            $scope.ReceiveData = function (address) {
-               // use $.param jQuery function to serialize data from JSON
-
+            $scope.ReceiveData = function () {
                var data = $.param({
                    dump : true
                });
-
                 var config = {
                     headers : {
                         'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
                     }
                 }
-
                 $http.post('/dump', data, config).then(function(success) {
-                    $scope.candump = success.data.candump;
-                    console.log($scope.candump);
+                    $scope.candump = success.data.candump.concat($scope.candump);
                 })
             };
+
+            $interval($scope.ReceiveData, 1000);
 
             $scope.StopCommand = function () {
-               // use $.param jQuery function to serialize data from JSON
-                var data = $.param({
-                    reset : true
-                });
-
-                var config = {
-                    headers : {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
-                    }
-                }
-
-                $http.post('/stop', data, config).then(function(success) {
-                    $scope.status = success.data.status;
-                    console.log($scope.status);
-                })
+               $scope.SendData("stop");
             };
-
     		 })
+         .controller('DateController', function($scope) {
+             $scope.date = new Date();
+         })
          .service('form', function($http) {
             function doGet() {
               // return promise from test
               return $http.get('http://localhost/form');
             }
-
             return {
               doGet: doGet
             }
           })
 
-          setInterval(function(){ $scope.ReceiveData(); }, 1000);
 
     </script>
 </head>
@@ -195,11 +139,12 @@
 
     		</section>
 
-          <form name="form">
+          <form action="/form" method="post" name="form" >
       		  <md-input-container class="md-block">
       			<label>ID#Message</label>
-      			<input minlength="3" maxlength="12" ng-pattern="/^\d{1,3}#.+/" md-no-asterisk name="message" ng-model="project.message">
-      			<div ng-messages="projectForm.message.$error">
+      			<input name="cansignal" minlength="3" maxlength="12" ng-pattern="/^\d{1,3}#.+/" md-no-asterisk name="message" ng-model="message" required>
+      			<div ng-messages="form.message.$error">
+              <div ng-message="required">You did not enter a field</div>
               <div ng-message="minlength">The message must be at least 3 characters long.</div>
         			<div ng-message="maxlength">The message must be less than 12 characters long.</div>
         			<div ng-message="pattern">Incorrect frame format.</div>
@@ -220,11 +165,14 @@
           </h2>
         </md-toolbar>
         <md-content>
-          <md-list>
-            <md-list-item class="md-3-line" ng-repeat="dump in candump">
-              <div class="md-list-item-text">
-                <h3>{{dump.id}}</h3>
-                <h4>{{dump.frame}}</h4>
+          <md-list class="make-scrollable">
+            <md-list-item class="md-3-line animation" ng-repeat="dump in candump">
+              <div class="md-list-item-text" layout="column">
+                <h3>ID: {{dump.id}}</h3>
+                <h3>Msg: {{dump.frame}}</h4>
+                <p ng-app="YourApp" ng-controller="DateController">
+                    {{date | date:'yyyy-MM-dd HH:MM:SS'}}
+                </p>
               </div>
               <md-divider md-inset ng-if="!$last"></md-divider>
             </md-list-item>
