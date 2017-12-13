@@ -22,8 +22,9 @@
         });
     }
         var app = angular.module('YourApp', ['ngMaterial', 'ngMessages']);
-    		app.controller('YourController', function($scope, $http) {
-          $scope.response = '';
+    		app.controller('YourController', function($scope, $interval, $http) {
+				var candump = {};
+/*        $scope.response = '';
           $scope.doGet = function() {
             form.doGet().then(
               function(response) {
@@ -46,62 +47,48 @@
                 }
               });
             }
+*/
 
             $scope.moveUpLeft = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("upleft");
             }
             $scope.moveUp = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("up");
             }
             $scope.moveUpRight = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("upright");
             }
 
             $scope.moveLeft = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("left");
             }
             $scope.moveRight = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("right");
             }
 
             $scope.moveDownLeft = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("downleft");
             }
             $scope.moveDown = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("down");
             }
             $scope.moveDownRight = function() {
-              $scope.cansignal = "move"
-              $scope.SendData("form");
+              $scope.SendData("downright");
             }
 
-            $scope.SendData = function (address) {
-               // use $.param jQuery function to serialize data from JSON
+            $scope.SendData = function (command) {
+
                var data = $.param({
-                   cansignal : $scope.cansignal
+                   cancommand : command
                });
 
-                var config = {
-                    headers : {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
-                    }
-                }
-
-                $http.post('/form', data, config).then(function(success) {
-                    $scope.candump = success.data.candumps;
-                    console.log($scope.candump);
+                $http.post('/form', data).then(function(success) {
+                    console.log(success.data.status);
                 })
+
             };
 
-            $scope.ReceiveData = function (address) {
-               // use $.param jQuery function to serialize data from JSON
+            $scope.ReceiveData = function () {
 
                var data = $.param({
                    dump : true
@@ -114,27 +101,16 @@
                 }
 
                 $http.post('/dump', data, config).then(function(success) {
-                    $scope.candump = success.data.candump;
+                    $scope.candump = $scope.candump.push(success.data.canlog);
                     console.log($scope.candump);
                 })
             };
 
+			
+            $interval($scope.ReceiveData, 1000);
+
             $scope.StopCommand = function () {
-               // use $.param jQuery function to serialize data from JSON
-                var data = $.param({
-                    reset : true
-                });
-
-                var config = {
-                    headers : {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
-                    }
-                }
-
-                $http.post('/stop', data, config).then(function(success) {
-                    $scope.status = success.data.status;
-                    console.log($scope.status);
-                })
+               $scope.SendData("stop"); 
             };
 
     		 })
@@ -148,8 +124,6 @@
               doGet: doGet
             }
           })
-
-          setInterval(function(){ $scope.ReceiveData(); }, 1000);
 
     </script>
 </head>
