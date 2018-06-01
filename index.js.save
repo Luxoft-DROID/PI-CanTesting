@@ -4,15 +4,7 @@ const can = require('rawcan');
 const exphbs = require('express-handlebars')
 const port = 3000
 const app = express()
-
-var bodyParser = require('body-parser')
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-})); 
-
 const motorsId = 456;
-
 
 var socket = can.createSocket('can0');
 
@@ -21,25 +13,21 @@ var socket = can.createSocket('can0');
   	  return "VICTORYGY";
   }
 
-  var cansignal;
+
   var canlog = {}
   var candumps = []
   canlog.candump = candumps;
 
   app.use('/', express.static(__dirname + '/'));
-  app.use(express.json());       
-  app.use(express.urlencoded()); 
 
   app.post('/form', function (req, res) {
-    console.log("recieved form" + req.body.cansignal);
-    
-    if (req.body != null)
-        cansignal = req.body.cansignal;
-    var parsedCan = cansignal.split('#');
+    console.log("recieved form");
+    if (req.body != null && req.body.cansignal)
+        var cansignal = req.body.cansignal;
+        cansignal = moveCode(req.body.cancommand);    var parsedCan = cansignal.split('#');
 
     socket.send(parseInt(parsedCan[0], 16), parsedCan[1].substring(0, 8));
     console.log(parseInt(parsedCan[0], 16) + "#" + parsedCan[1].substring(0, 8));
-    res.send({success:"true"});
   });
 
   socket.on('message', (id, buffer) => {
@@ -51,6 +39,8 @@ var socket = can.createSocket('can0');
     }
     canlog.candump.unshift(dump);
   });
+
+  socket.on('error', err => { console.log('socket error: ' + err); });
 
   app.post('/dump', function (req, res) {
     res.send(canlog);

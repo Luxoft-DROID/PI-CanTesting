@@ -29,36 +29,46 @@
             $scope.candump = [];
 
             $scope.moveUpLeft = function() {
-              $scope.SendData("upleft");
+              $scope.SendData("ul");
             }
             $scope.moveUp = function() {
               $scope.SendData("up");
             }
             $scope.moveUpRight = function() {
-              $scope.SendData("upright");
+              $scope.SendData("upr");
             }
             $scope.moveLeft = function() {
-              $scope.SendData("left");
+              $scope.SendData("l");
             }
             $scope.moveRight = function() {
-              $scope.SendData("right");
+              $scope.SendData("r");
             }
             $scope.moveDownLeft = function() {
-              $scope.SendData("downleft");
+              $scope.SendData("dl");
             }
             $scope.moveDown = function() {
-              $scope.SendData("down");
+              $scope.SendData("d");
             }
             $scope.moveDownRight = function() {
-              $scope.SendData("downright");
+              $scope.SendData("dr");
             }
             $scope.SendData = function (command) {
-               var data = $.param({
-                   cancommand : command
+	       command = "345#" + command;
+               var datas = $.param({
+                   cansignal : command
                });
-                $http.post('/form', data).then(function(success) {
-                    console.log(success.data.status);
-                })
+               $.ajax({
+	  	 type: "POST",
+  		 contentType: "application/x-www-form-urlencoded;charset=utf-8",
+		 url: "/form",
+ 		 data: datas,
+		 dataType: "json",
+                 success: {
+                    true : function () {
+                        console.log("WIN")
+                    }
+                 }
+	       });
             };
 
             $scope.ReceiveData = function () {
